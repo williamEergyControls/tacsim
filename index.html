@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TacSim">
+<meta name="theme-color" content="#3d5a1e">
+<link rel="manifest" href="manifest.json">
+<title>TacSim — MOUT Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Karla:wght@400;500;600;700&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#f4f1ea;--paper:#fff;--sand:#ede9df;--sand-deep:#d9d3c5;--ink:#1e1c18;--ink-2:#38352e;--ink-3:#6b6455;--olive:#4a5c1e;--olive-mid:#627a28;--olive-lt:#e9f0d6;--olive-line:#c8d8a0;--red:#b83228;--red-lt:#fdf0ee;--red-line:#e8b0aa;--amber:#c07818;--amber-lt:#fdf5e6;--amber-line:#e8ce98;--blue:#1a5490;--blue-lt:#e8f0fa;--blue-line:#a0c0e8;--rule:#e2ddd4;--sh-sm:0 1px 4px rgba(30,28,24,.08);--sh-md:0 3px 14px rgba(30,28,24,.13);--r:10px;--r-sm:7px;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;height:100dvh;overflow:hidden;}
+body{background:var(--cream);color:var(--ink);font-family:'Karla',sans-serif;font-size:15px;line-height:1.6;display:flex;flex-direction:column;padding-top:var(--st);}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--sand-deep);border-radius:2px}
+
+#topbar{background:var(--paper);border-bottom:1.5px solid var(--rule);padding:9px 16px 8px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:var(--sh-sm);z-index:20;}
+.tb-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;letter-spacing:3px;color:var(--ink);line-height:1;}
+.tb-accent{color:var(--olive);}
+.tb-badge{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:2px;color:var(--ink-3);background:var(--sand);padding:2px 8px;border-radius:20px;border:1px solid var(--rule);}
+.tb-xp{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.tb-xp-lbl{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:2px;color:var(--olive);font-weight:500;}
+.tb-xp-track{width:56px;height:5px;background:var(--sand);border-radius:3px;overflow:hidden;border:1px solid var(--rule);}
+.tb-xp-fill{height:100%;background:linear-gradient(to right,var(--olive),var(--olive-mid));border-radius:3px;width:0%;transition:width .6s ease;}
+.tb-xp-num{font-family:'Inconsolata',monospace;font-size:10px;font-weight:500;color:var(--olive);white-space:nowrap;}
+
+#ad-banner{background:var(--ink-2);padding:7px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;position:relative;overflow:hidden;}
+#ad-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);animation:shimmer 4s linear infinite;pointer-events:none;}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.ad-tag{font-family:'Inconsolata',monospace;font-size:7px;letter-spacing:2px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.18);padding:1px 5px;border-radius:3px;flex-shrink:0;}
+.ad-txt{flex:1;font-size:11px;color:rgba(255,255,255,.7);line-height:1.35;}
+.ad-txt strong{color:#e8d87a;}
+.ad-cta{font-family:'Inconsolata',monospace;font-size:9px;color:#90d890;border:1px solid rgba(144,216,144,.3);padding:3px 10px;border-radius:20px;background:rgba(144,216,144,.1);white-space:nowrap;flex-shrink:0;}
+
+#nav{background:var(--paper);border-bottom:1.5px solid var(--rule);display:flex;overflow-x:auto;scrollbar-width:none;flex-shrink:0;padding:0 6px;}
+#nav::-webkit-scrollbar{display:none;}
+.nav-tab{padding:10px 12px 9px;cursor:pointer;font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:1.5px;color:var(--ink-3);border-bottom:2.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all .18s;margin-bottom:-1.5px;display:flex;align-items:center;gap:5px;text-transform:uppercase;user-select:none;}
+.nav-tab:hover{color:var(--ink);}
+.nav-tab.active{color:var(--olive);border-bottom-color:var(--olive);font-weight:600;}
+.tab-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.4;flex-shrink:0;}
+.nav-tab.active .tab-dot{opacity:1;animation:pdot 2s infinite;}
+@keyframes pdot{0%,100%{transform:scale(1)}50%{transform:scale(1.6)}}
+
+#scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--cream);padding-bottom:calc(var(--sb) + 20px);}
+
+.section{display:none;padding:16px 14px 8px;max-width:560px;margin:0 auto;}
+.section.active{display:block;animation:sup .25s ease;}
+@keyframes sup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:3px;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;}
+.pg-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(26px,8vw,38px);font-weight:800;letter-spacing:3px;color:var(--ink);line-height:1;margin-bottom:16px;}
+.pg-title em{color:var(--olive);font-style:normal;}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat-box{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r-sm);padding:10px 12px;}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--olive);line-height:1;}
+.stat-lbl{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;color:var(--ink-3);text-transform:uppercase;}
+
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.mc{background:var(--paper);border-radius:var(--r);padding:15px 12px 13px;cursor:pointer;border:1.5px solid var(--rule);box-shadow:var(--sh-sm);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;}
+.mc.solo::before{background:var(--amber)}.mc.team::before{background:var(--blue)}.mc.edge::before{background:var(--red)}.mc.drone::before{background:var(--olive)}.mc.quiz::before{background:var(--ink-3)}
+.mc:active{transform:translateY(-2px);box-shadow:var(--sh-md);}
+.mc-lbl{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.mc.solo .mc-lbl{color:var(--amber)}.mc.team .mc-lbl{color:var(--blue)}.mc.edge .mc-lbl{color:var(--red)}.mc.drone .mc-lbl{color:var(--olive)}.mc.quiz .mc-lbl{color:var(--ink-3)}
+.mc-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1.5px;color:var(--ink);margin-bottom:4px;}
+.mc-desc{font-size:11px;color:var(--ink-3);line-height:1.5;margin-bottom:9px;}
+.mc-tag{display:inline-block;font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:1px;padding:2px 8px;border-radius:20px;border:1px solid;}
+.mc.solo .mc-tag{background:var(--amber-lt);color:var(--amber);border-color:var(--amber-line);}
+.mc.team .mc-tag{background:var(--blue-lt);color:var(--blue);border-color:var(--blue-line);}
+.mc.edge .mc-tag{background:var(--red-lt);color:var(--red);border-color:var(--red-line);}
+.mc.drone .mc-tag{background:var(--olive-lt);color:var(--olive);border-color:var(--olive-line);}
+.mc.quiz .mc-tag{background:var(--sand);color:var(--ink-3);border-color:var(--sand-deep);}
+
+.prog-row{background:var(--paper);border-radius:var(--r-sm);border:1.5px solid var(--rule);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh-sm);}
+.prog-lbl{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:2px;color:var(--ink-3);white-space:nowrap;text-transform:uppercase;}
+.prog-track{flex:1;height:8px;background:var(--sand);border-radius:4px;overflow:hidden;border:1px solid var(--rule);}
+.prog-fill{height:100%;background:linear-gradient(to right,var(--olive),var(--olive-mid));border-radius:4px;transition:width .5s ease;}
+.prog-pct{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--olive);min-width:42px;text-align:right;line-height:1;}
+
+.phase-div{display:flex;align-items:center;gap:10px;margin:16px 0 8px;}
+.phase-div-txt{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:3px;color:var(--ink-3);white-space:nowrap;text-transform:uppercase;}
+.phase-div::after{content:'';flex:1;height:1px;background:var(--rule);}
+
+.sc{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--rule);box-shadow:var(--sh-sm);margin-bottom:8px;overflow:hidden;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .1s;}
+.sc:active{transform:scale(.994);}
+.sc.open{border-color:var(--olive);box-shadow:var(--sh-md);}
+.sc.done .sc-hdr{opacity:.6;}
+.sc-hdr{display:flex;align-items:center;gap:11px;padding:12px 14px;}
+.sc-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;border:2px solid;transition:all .3s;}
+.sn-warn{border-color:var(--amber);color:var(--amber);background:var(--amber-lt);}
+.sn-danger{border-color:var(--red);color:var(--red);background:var(--red-lt);}
+.sn-ok{border-color:var(--olive);color:var(--olive);background:var(--olive-lt);}
+.sn-blue{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
+.sn-done{border-color:var(--olive-mid);color:var(--paper);background:var(--olive-mid);}
+.sc-info{flex:1;min-width:0;}
+.sc-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);margin-bottom:1px;line-height:1.2;}
+.sc-sub{font-family:'Inconsolata',monospace;font-size:10px;color:var(--ink-3);letter-spacing:.5px;}
+.sc-chev{color:var(--sand-deep);font-size:11px;transition:transform .2s;flex-shrink:0;font-weight:700;}
+.sc.open .sc-chev{transform:rotate(180deg);color:var(--olive);}
+.sc-body{display:none;padding:0 14px 14px 59px;border-top:1px solid var(--sand);}
+.sc.open .sc-body{display:block;padding-top:12px;}
+.sc-body p{font-size:13px;color:var(--ink-2);line-height:1.7;margin-bottom:8px;}
+.sc-body ul{padding-left:16px;margin:6px 0 10px;}
+.sc-body li{font-size:12px;color:var(--ink-2);margin-bottom:5px;line-height:1.6;}
+.sc-body li::marker{color:var(--olive);}
+
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+@media(max-width:360px){.role-grid{grid-template-columns:1fr;}}
+.role-card{background:var(--sand);border:1px solid var(--rule);border-radius:var(--r-sm);padding:10px 11px;}
+.role-name{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:1.5px;color:var(--blue);text-transform:uppercase;margin-bottom:4px;font-weight:600;}
+.role-desc{font-size:11px;color:var(--ink-2);line-height:1.5;}
+
+.callout{display:flex;gap:9px;padding:10px 12px;border-radius:var(--r-sm);margin:10px 0;font-size:12px;line-height:1.65;align-items:flex-start;border-left:3px solid;}
+.callout.tip{background:var(--olive-lt);border-color:var(--olive);color:var(--ink-2);}
+.callout.danger{background:var(--red-lt);border-color:var(--red);color:#6b1515;}
+.callout.warning{background:var(--amber-lt);border-color:var(--amber);color:#5a3a00;}
+.callout.info{background:var(--blue-lt);border-color:var(--blue);color:#0d3a6b;}
+.callout-lbl{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;opacity:.65;margin-bottom:3px;text-transform:uppercase;font-weight:500;display:block;}
+
+.diag-wrap{background:var(--sand);border:1.5px solid var(--rule);border-radius:var(--r-sm);margin:12px 0;overflow:hidden;}
+.diag-hdr{padding:7px 12px;background:var(--cream);border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:7px;}
+.diag-dot{width:5px;height:5px;border-radius:50%;background:var(--olive-mid);animation:pdot 2s infinite;flex-shrink:0;}
+.diag-lbl{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;color:var(--ink-3);text-transform:uppercase;}
+.diag-body{padding:10px;display:flex;justify-content:center;overflow-x:auto;}
+svg.diag{max-width:100%;height:auto;display:block;}
+
+.ai-box{background:var(--blue-lt);border:1.5px solid var(--blue-line);border-radius:var(--r-sm);padding:11px 13px;margin-top:10px;display:none;}
+.ai-box.on{display:block;animation:sup .25s ease;}
+.ai-hdr{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pdot 1.2s infinite;flex-shrink:0;}
+.ai-lbl{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;color:var(--blue);text-transform:uppercase;font-weight:500;}
+.ai-txt{font-size:12px;color:var(--ink-2);line-height:1.7;}
+.spin{width:13px;height:13px;border:2px solid var(--blue-line);border-top-color:var(--blue);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld{display:flex;align-items:center;gap:8px;color:var(--blue);font-size:12px;}
+
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.btn{display:inline-flex;align-items:center;border-radius:var(--r-sm);padding:9px 16px;font-family:'Karla',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;border:none;}
+.btn:active{transform:scale(.96);}
+.btn-p{background:var(--olive);color:var(--paper);box-shadow:0 2px 8px rgba(74,92,30,.25);}
+.btn-p:hover{background:var(--olive-mid);}
+.btn-ai{background:transparent;color:var(--blue);border:1.5px solid var(--blue-line);}
+.btn-ai:hover{background:var(--blue-lt);}
+.btn-g{background:var(--sand);color:var(--ink-2);border:1.5px solid var(--rule);}
+.btn-g:hover{background:var(--paper);}
+
+.ec,.dc{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--rule);box-shadow:var(--sh-sm);margin-bottom:8px;overflow:hidden;cursor:pointer;transition:border-color .2s,box-shadow .2s;}
+.ec.open{box-shadow:var(--sh-md);}
+.ec.done,.dc.done{opacity:.6;border-color:var(--olive-mid);}
+.dc.open{border-color:var(--olive);box-shadow:var(--sh-md);}
+.ec[data-c="red"].open{border-color:var(--red);}
+.ec[data-c="amber"].open{border-color:var(--amber);}
+.ec[data-c="olive"].open{border-color:var(--olive);}
+.ec[data-c="blue"].open{border-color:var(--blue);}
+.ec-hdr,.dc-hdr{display:flex;align-items:center;gap:10px;padding:13px 14px;}
+.etag{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:1px;padding:3px 9px;border-radius:20px;flex-shrink:0;border:1px solid;text-transform:uppercase;}
+.etag.red{background:var(--red-lt);color:var(--red);border-color:var(--red-line);}
+.etag.amber{background:var(--amber-lt);color:var(--amber);border-color:var(--amber-line);}
+.etag.olive{background:var(--olive-lt);color:var(--olive);border-color:var(--olive-line);}
+.etag.blue{background:var(--blue-lt);color:var(--blue);border-color:var(--blue-line);}
+.etag.done{background:var(--olive-lt);color:var(--olive);border-color:var(--olive-line);}
+.ec-title,.dc-title{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink);}
+.ec-chev,.dc-chev{color:var(--sand-deep);font-size:11px;font-weight:700;transition:transform .2s;flex-shrink:0;}
+.ec.open .ec-chev,.dc.open .dc-chev{transform:rotate(180deg);}
+.dc.open .dc-chev{color:var(--olive);}
+.dcat{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:1.5px;padding:3px 9px;border-radius:20px;background:var(--olive-lt);color:var(--olive);border:1px solid var(--olive-line);flex-shrink:0;text-transform:uppercase;}
+.ec-body,.dc-body{display:none;padding:12px 14px 14px;border-top:1px solid var(--sand);font-size:12px;line-height:1.7;color:var(--ink-2);}
+.ec.open .ec-body,.dc.open .dc-body{display:block;}
+.ec-body ul,.dc-body ul{padding-left:16px;margin:8px 0;}
+.ec-body li,.dc-body li{margin-bottom:5px;}
+.ec-body li::marker{color:var(--red);}
+.dc-body li::marker{color:var(--olive);}
+.dtip{background:var(--olive-lt);border-left:3px solid var(--olive);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;margin-top:10px;font-size:12px;color:var(--ink-2);}
+.dtip-lbl{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;color:var(--olive);opacity:.7;margin-bottom:3px;display:block;text-transform:uppercase;}
+
+.iad{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--rule);box-shadow:var(--sh-sm);padding:12px 14px;margin:12px 0;cursor:pointer;display:flex;gap:11px;align-items:center;position:relative;overflow:hidden;}
+.iad::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(to right,var(--amber),var(--olive-mid));}
+.iad-badge{position:absolute;top:7px;right:10px;font-family:'Inconsolata',monospace;font-size:7px;letter-spacing:1.5px;color:var(--ink-3);border:1px solid var(--rule);padding:1px 5px;border-radius:3px;}
+.iad-icon{width:38px;height:38px;border-radius:var(--r-sm);background:var(--sand);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;flex-shrink:0;color:var(--ink-2);}
+.iad-body{flex:1;min-width:0;}
+.iad-hl{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.iad-sub{font-size:11px;color:var(--ink-3);line-height:1.4;}
+.iad-cta{font-family:'Inconsolata',monospace;font-size:9px;color:var(--olive);border:1.5px solid var(--olive-line);padding:6px 11px;border-radius:var(--r-sm);background:var(--olive-lt);white-space:nowrap;flex-shrink:0;font-weight:500;}
+
+.q-score-row{display:flex;gap:8px;margin-bottom:14px;}
+.q-score{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r-sm);padding:8px 14px;display:flex;flex-direction:column;align-items:center;flex:1;}
+.q-score-n{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;color:var(--olive);line-height:1;}
+.q-score-l{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;color:var(--ink-3);}
+.q-streak{background:var(--amber-lt);border:1.5px solid var(--amber-line);border-radius:var(--r-sm);padding:8px 14px;display:flex;flex-direction:column;align-items:center;flex:1;}
+.q-streak-n{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;color:var(--amber);line-height:1;}
+.q-streak-l{font-family:'Inconsolata',monospace;font-size:8px;letter-spacing:2px;color:var(--amber);}
+.qcard{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--rule);box-shadow:var(--sh-sm);padding:16px;margin-bottom:12px;}
+.qtype{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:2px;color:var(--ink-3);text-transform:uppercase;margin-bottom:9px;}
+.qquestion{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:14px;}
+.qopts{display:flex;flex-direction:column;gap:8px;}
+.qopt{background:var(--sand);border:1.5px solid var(--rule);border-radius:var(--r-sm);padding:11px 14px;cursor:pointer;font-size:13px;color:var(--ink-2);transition:all .15s;text-align:left;font-family:'Karla',sans-serif;width:100%;}
+.qopt:hover:not(:disabled){background:var(--paper);border-color:var(--olive);}
+.qopt.correct{background:var(--olive-lt);border-color:var(--olive);color:var(--olive);}
+.qopt.wrong{background:var(--red-lt);border-color:var(--red);color:var(--red);}
+.qopt:disabled{pointer-events:none;}
+.qfb{margin-top:12px;border-radius:var(--r-sm);padding:10px 13px;font-size:12px;line-height:1.7;display:none;}
+.qfb.on{display:block;animation:sup .2s ease;}
+.qfb.correct{background:var(--olive-lt);border:1.5px solid var(--olive);color:#2a4010;}
+.qfb.wrong{background:var(--red-lt);border:1.5px solid var(--red-line);color:#6b1515;}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="tb-logo">TAC<span class="tb-accent">SIM</span></div>
+  <div class="tb-badge">MOUT</div>
+  <div class="tb-xp">
+    <span class="tb-xp-lbl">XP</span>
+    <div class="tb-xp-track"><div class="tb-xp-fill" id="xpFill"></div></div>
+    <span class="tb-xp-num" id="xpNum">0</span>
+  </div>
+</div>
+
+<div id="ad-banner" onclick="rotateBanner()">
+  <span class="ad-tag">AD</span>
+  <div class="ad-txt" id="banTxt"></div>
+  <div class="ad-cta" id="banCta"></div>
+</div>
+
+<div id="nav">
+  <div class="nav-tab active" data-t="home" onclick="go('home')"><span class="tab-dot"></span>Home</div>
+  <div class="nav-tab" data-t="solo" onclick="go('solo')"><span class="tab-dot"></span>Solo Clear</div>
+  <div class="nav-tab" data-t="team" onclick="go('team')"><span class="tab-dot"></span>Team Entry</div>
+  <div class="nav-tab" data-t="edge" onclick="go('edge')"><span class="tab-dot"></span>Edge Cases</div>
+  <div class="nav-tab" data-t="drone" onclick="go('drone')"><span class="tab-dot"></span>Drone Ops</div>
+  <div class="nav-tab" data-t="quiz" onclick="go('quiz')"><span class="tab-dot"></span>Quiz</div>
+</div>
+
+<div id="scroll">
+
+<div class="section active" id="s-home">
+  <div class="eyebrow">National Guard Training Aid</div>
+  <div class="pg-title">MOUT <em>Ready</em></div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-num" id="stCards">0</div><div class="stat-lbl">Cards Read</div></div>
+    <div class="stat-box"><div class="stat-num" id="stQuiz">--</div><div class="stat-lbl">Quiz Accuracy</div></div>
+  </div>
+  <div class="home-grid">
+    <div class="mc solo" onclick="go('solo')"><div class="mc-lbl">Solo</div><div class="mc-title">Room Clear</div><div class="mc-desc">7-step individual technique. Stack, pie, breach, dominate, call clear.</div><div class="mc-tag">7 Steps</div></div>
+    <div class="mc team" onclick="go('team')"><div class="mc-lbl">Team</div><div class="mc-title">4-Man Stack</div><div class="mc-desc">Roles, go signal, breach flow, sectors of fire, callouts.</div><div class="mc-tag">8 Steps</div></div>
+    <div class="mc edge" onclick="go('edge')"><div class="mc-lbl">Edge</div><div class="mc-title">Contingencies</div><div class="mc-desc">Barricades, contact before entry, civilians, stairs, T-intersections.</div><div class="mc-tag">6 Scenarios</div></div>
+    <div class="mc drone" onclick="go('drone')"><div class="mc-lbl">ISR</div><div class="mc-title">Drone Ops</div><div class="mc-desc">Overwatch, callout protocol, blind spots, failure contingencies.</div><div class="mc-tag">6 Modules</div></div>
+  </div>
+  <div class="mc quiz" style="margin-bottom:14px;" onclick="go('quiz')"><div class="mc-lbl">Knowledge Check</div><div class="mc-title">AI-Powered Quiz</div><div class="mc-desc">Randomized questions across all MOUT doctrine. Score and streak tracking. Unlimited rounds with AI-generated explanations.</div><div class="mc-tag">Unlimited</div></div>
+  <div id="home-ad"></div>
+</div>
+
+<div class="section" id="s-solo">
+  <div class="eyebrow">Individual Technique</div>
+  <div class="pg-title">Solo <em>Clear</em></div>
+  <div class="prog-row"><span class="prog-lbl">Progress</span><div class="prog-track"><div class="prog-fill" id="soloFill" style="width:0%"></div></div><span class="prog-pct" id="soloPct">0%</span></div>
+  <div id="solo-wrap"></div>
+</div>
+
+<div class="section" id="s-team">
+  <div class="eyebrow">Team Technique</div>
+  <div class="pg-title">4-Man <em>Stack</em></div>
+  <div class="prog-row"><span class="prog-lbl">Progress</span><div class="prog-track"><div class="prog-fill" id="teamFill" style="width:0%"></div></div><span class="prog-pct" id="teamPct">0%</span></div>
+  <div id="team-wrap"></div>
+</div>
+
+<div class="section" id="s-edge">
+  <div class="eyebrow">Contingency Procedures</div>
+  <div class="pg-title">Edge <em>Cases</em></div>
+  <div id="edge-wrap"></div>
+</div>
+
+<div class="section" id="s-drone">
+  <div class="eyebrow">ISR Integration</div>
+  <div class="pg-title">Drone <em>Ops</em></div>
+  <div id="drone-wrap"></div>
+</div>
+
+<div class="section" id="s-quiz">
+  <div class="eyebrow">Knowledge Check</div>
+  <div class="pg-title">AI <em>Quiz</em></div>
+  <div class="q-score-row">
+    <div class="q-score"><div class="q-score-n" id="qSc">0</div><div class="q-score-l">Correct</div></div>
+    <div class="q-streak"><div class="q-streak-n" id="qStr">0</div><div class="q-streak-l">Streak</div></div>
+  </div>
+  <div id="quiz-wrap">
+    <div class="qcard">
+      <div class="qtype">Ready to train?</div>
+      <div class="qquestion">Test your MOUT knowledge. AI generates a new question each round from 19 doctrine topic areas.</div>
+      <div class="btn-row"><button class="btn btn-p" onclick="loadQ()">Start Quiz</button></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────
+const SOLO=[
+{id:'S1',phase:'PHASE 1 — APPROACH',title:'Stack on the Wall',sub:'Get offline from the door',sev:'warn',
+body:'Press flat against the wall beside the door, never directly in front of it. The space directly in front of any entry point is the fatal funnel — standing there silhouettes you to anyone inside.',
+bul:['Weapon up — muzzle angled toward the door at all times','Keep your profile tight to the wall surface','Slow your breathing before you commit to movement','Stay offline until ready to pie or breach'],
+danger:null,warn:null,tip:'Same instinct as hugging a wall before a corner check. Get geometry on your side before you expose anything.',diag:'wall_stack'},
+
+{id:'S2',phase:null,title:'Pie the Doorway',sub:'Slice the room — see before entering',sev:'warn',
+body:'Step away from the wall slowly to reveal the room in thin angular slices. Move your eyes and muzzle together as a single unit. You see threats before they see you.',
+bul:['Start far back from the frame — gives maximum early angle','Work one side fully, then cross and repeat the other','Spotted a threat while pieing — you have first-mover advantage','Do not rush the pie — every inch you step reveals another slice'],
+danger:null,warn:null,tip:'Extend your view angle without exposing your body. Most of the room is readable before you ever cross the threshold.',diag:'pie'},
+
+{id:'S3',phase:'PHASE 2 — BREACH',title:'Breach Fast — No Stopping',sub:'Move through the kill zone instantly',sev:'danger',
+body:'Once you commit to entry, you go. The door frame is a kill box. Cross it in one or two steps and get to a wall inside immediately. Never hesitate mid-doorway.',
+bul:['Button-hook: enter and immediately curve to the hinge-side corner','Cross-entry: enter and move straight to the far wall','Read your pie and pick the path away from threat indicators','Weapon already up and tracking as your feet carry you through'],
+danger:'Standing in a doorway silhouettes you against the light behind you. You have zero seconds to pause. Move through.',warn:null,tip:null,diag:'breach'},
+
+{id:'S4',phase:'PHASE 3 — CLEAR',title:'Dominate Your Corner',sub:'Back to wall — own your sector',sev:'ok',
+body:'First priority after crossing: back to a wall. Threats can only approach from in front of you. Your weapon covers the maximum open space.',
+bul:['Choose the corner giving you the widest field of view','Never expose your back to any uncleared doorway','Stay low — reduce your target profile as much as possible','Control the angle until the room is confirmed clear'],
+danger:null,warn:null,tip:'Wall behind you, lanes covered in front. You cannot be pushed from behind when you own a corner properly.',diag:'corner'},
+
+{id:'S5',phase:null,title:'C-CLAP Clear Method',sub:'Systematic — never assume clear',sev:'ok',
+body:'C-CLAP is the systematic sequence for clearing a room: Corners — Closets — Large furniture — Above eye-line — Periodic recheck. Run this sequence every single time without shortcutting.',
+bul:['Near corners first — hardest to see while pieing from outside','Every closet and alcove gets physically opened and checked','Check under beds and behind every large object','Look above eye-line — elevated threats are the most commonly missed','Recheck after clearing furniture — a threat can reposition while you move'],
+danger:null,warn:'A room is not clear until every corner and concealment spot has been physically verified. Glancing is not clearing.',tip:'Never assume a room is empty just because you looked once.',diag:'cclap'},
+
+{id:'S6',phase:null,title:'Call Clear — Control Exits',sub:'Verbalize every time',sev:'ok',
+body:'When the room is physically clear, state it out loud: CLEAR. Train this habit on every rep, even solo. Then immediately face your weapon toward the next exit.',
+bul:['Control all exits before you begin searching or securing the space','Never turn your back on an uncleared door to search a room','Note which exits are cleared and which are not, before moving on','CLEAR is a commitment — only say it when you are certain'],
+danger:'Turning your back on an uncleared door to search the current room is the most common way operators get shot from a room they have not entered yet.',warn:null,tip:null,diag:null},
+
+{id:'S7',phase:null,title:'Move to Next Room — Reset',sub:'Stack, pie, breach, clear. Repeat.',sev:'ok',
+body:'Every interior door gets the full treatment. No shortcuts. No skipping steps because a room looks empty. A cleared room can be re-entered from the outside while you are in the next room.',
+bul:['Watch your six — previously cleared rooms are not permanently secure','Work room to room methodically, not rushing toward the end of the building','Final call when every room is verified: BUILDING CLEAR','Solo clearing is high-risk in real operations — this drill builds your baseline'],
+danger:null,warn:null,tip:null,diag:null}
+];
+
+const TEAM=[
+{id:'T0',phase:'PHASE 0 — ROLES',title:'The 4 Stack Positions',sub:'Know yours before you stack',sev:'blue',
+body:'Every person in the stack has a number and a specific assignment. You know your number before you leave the brief. Confusion about roles on entry costs lives.',
+roles:[
+  {name:'No.1 — POINTMAN',desc:'First through. Hooks to hinge-side corner. Most exposure. Calls the go signal.'},
+  {name:'No.2 — ASSAULT',desc:'Second in. Crosses to latch-side corner — opposite of No.1. Completes the initial room domination.'},
+  {name:'No.3 — SUPPORT',desc:'Third in. Controls center. Covers what No.1 and No.2 miss. Backs up additional exits inside the room.'},
+  {name:'No.4 — REAR GUARD',desc:'Holds the threshold. Faces away — watches the stack\'s back. Does not rush in unless directed.'}
+],
+bul:null,danger:null,warn:null,tip:'No.1 is your entry pointman, No.2 is support, No.3 is center control, No.4 holds the rotation and prevents the team from being flanked.',diag:'stack_order'},
+
+{id:'T1',phase:'PHASE 1 — STACK',title:'Form the Stack',sub:'Tight. Quiet. Weapons up.',sev:'warn',
+body:'Everyone presses flat against the wall beside the door. No gaps between bodies. No talking. No shuffling. No.4 faces the opposite direction — watching the rear at all times.',
+bul:['Touch the shoulder of the person in front — physical contact confirms position','No.1 closest to the frame, weapon angled toward the entry point','Noise discipline — the threat may be six feet away on the other side','Maintain position until the go signal travels the full stack'],
+danger:null,warn:null,tip:null,diag:'stack_form'},
+
+{id:'T2',phase:null,title:'Non-Verbal Go Signal',sub:'Squeeze backward — No.1 calls go',sev:'warn',
+body:'Shouting ready is a noise discipline failure and destroys your element of surprise. The ready signal travels as a shoulder squeeze — backward through the stack, then forward.',
+bul:['No.1 squeezes No.2 — confirms ready','No.2 squeezes No.3 — passes it back','No.3 squeezes No.4 — passes it back','No.4 squeezes forward when ready — signal travels back up to No.1','No.1 receives the confirmed ready and calls the breach'],
+danger:null,warn:null,tip:'All-ready confirmation before the push. Nobody enters before the entire team is set.',diag:null},
+
+{id:'T3',phase:'PHASE 2 — BREACH',title:'No.1 Goes — Everyone Flows',sub:'Two seconds to dominate the room',sev:'danger',
+body:'No.1 breaches and hooks to their corner immediately. The stack flows right behind — one-step gap between each person. No bunching. No hesitation. Everyone has an assignment.',
+bul:['No.1 hooks to hinge-side corner instantly on crossing','No.2 is one step behind — crosses to latch-side corner','No.3 flows in third — takes center control and covers what No.1 and No.2 miss','No.4 holds the threshold — covers back, does not rush in'],
+danger:'If the stack piles up in the doorway, you have created a target cluster. Each person has one assignment — get there.',warn:null,tip:null,diag:'team_breach'},
+
+{id:'T4',phase:'PHASE 3 — DOMINATE',title:'Sectors of Fire',sub:'Stay in your lane — no crossover',sev:'danger',
+body:'Each person in the stack owns a sector of the room. You do not sweep your weapon into someone else\'s lane. Crossing lanes puts you downrange of a friendly weapon.',
+bul:['Brief sectors before every entry — know exactly where your lane ends','No.1 owns left side, No.2 owns right side, No.3 owns center sweep','If a threat moves into another sector, call it — do not chase','Sector assignments never change mid-entry without a callout'],
+danger:'Stepping into someone\'s sector puts you in front of their muzzle. Brief sectors before every single entry without exception.',warn:null,tip:null,diag:'sectors'},
+
+{id:'T5',phase:null,title:'Callouts — Talk the Entire Clear',sub:'No silent operators',sev:'ok',
+body:'Your team cannot see what you see. You have to say it. Short, directional, loud. Every contact, every movement, every reload.',
+bul:['CLEAR LEFT — your sector is verified clear','THREAT RIGHT, 3 OCLOCK — contact with direction','COMING THROUGH — before crossing into another sector','FRIENDLY MOVING — any time you reposition','RELOADING — so No.3 covers your sector while you are down'],
+danger:null,warn:null,tip:'If you do not say it, your team does not know. Someone gets shot.',diag:null},
+
+{id:'T6',phase:null,title:'Call Clear — Consolidate',sub:'All sectors verified — reform',sev:'ok',
+body:'Team leader waits for every sector callout, then calls: ROOM CLEAR. Consolidation is the two seconds that sets up the next entry correctly.',
+bul:['No.4 moves to secure the entry door behind the team','No.1 or No.2 takes security position on the next door','No.3 does a final scan — double-check corners before moving','Reform the stack at the next door before proceeding'],
+danger:null,warn:null,tip:null,diag:null},
+
+{id:'T7',phase:null,title:'Debrief Every Building',sub:'Fix it. Run it again.',sev:'ok',
+body:'After every building — even in training — stop and debrief before moving on. Every rep should be faster and tighter than the last one.',
+bul:['Who hit their corner assignment exactly right','Who slowed down in the doorway or hesitated','Who went silent during the clear','Who drifted into another sector','Who forgot to watch the rear approach'],
+danger:null,warn:null,tip:'Speed with control. Aggression with discipline. Run it until nobody has to think about their job — they just move.',diag:null}
+];
+
+const EDGE=[
+{id:'E1',tag:'HIGH RISK',tc:'red',title:'Barricaded Door',
+body:'Rule one — do not kick repeatedly. You are standing in the open making noise while burning time.',
+bul:['First option: find alternate entry — window, adjacent room breach, different door','Second option: dynamic breach per mission SOP — not a solo call','Solo: do not force a barricaded door alone. Hold position and call for support.','A barricaded door is an intel signal — someone inside knew you were coming'],
+warn:'Barricaded equals prepared. Expect an ambush the moment that door opens. Do not rush the breach.',danger:null,info:null},
+
+{id:'E2',tag:'HIGH RISK',tc:'red',title:'Contact Before Entry',
+body:'Immediate action: get off the X. Move laterally away from your current position.',
+bul:['Return fire and suppress the threat position','Do not continue the original entry plan while taking fire','Call it: CONTACT FRONT, BREAK BREAK BREAK','The building is now confirmed occupied hostile — reassess before re-engaging','Request support before attempting any new entry'],
+danger:'Cover stops bullets — concrete, engine blocks, thick masonry. Concealment only hides you — drywall, bushes, car doors. Get behind cover, not concealment.',warn:null,info:null},
+
+{id:'E3',tag:'MODERATE',tc:'amber',title:'Civilian in the Room',
+body:'Immediately issue loud, clear commands: HANDS UP — DO NOT MOVE — SHOW ME YOUR HANDS.',
+bul:['Keep your weapon on them until both hands are visible and verified empty','Do not assume civilian means safe — they may conceal weapons or shield a threat','Move them to a corner: GET DOWN — FACE THE WALL — DO NOT MOVE','Designate one operator to control the civilian while others continue the clear','Know your ROE before you go in — this decision has legal and mission weight'],
+warn:'Maintain standoff distance. Do not allow a civilian to approach you or any teammate during a clear. Control their hands at all times.',danger:null,info:null},
+
+{id:'E4',tag:'MODERATE',tc:'amber',title:'Multiple Exits in One Room',
+body:'Brief all exits before entry. Every person knows their assigned door before you breach.',
+bul:['No.1 clears near corner — No.2 immediately covers the secondary exit','No.3 covers any additional exit — a room is not clear until every exit is covered','No.4 holds the entry point — prevents threats re-entering from behind','Cover all exits before clearing furniture — a threat that escapes is now behind you'],
+info:'Exits are the priority. A threat that runs out of your room and re-enters from a different direction can hit your entire team from behind.',warn:null,danger:null},
+
+{id:'E5',tag:'STAIRWELL',tc:'olive',title:'Stairwell Clearing',
+body:'Stairwells are the most dangerous confined space in any building operation.',
+bul:['Hug the outside wall going up — gives you more angular exposure faster','Weapon points up the stairwell at all times — that is where the threat is','No.1 leads, No.2 covers the rear — threats can approach from below','Pie the top landing before committing your body — same mechanics as a door','Announce each floor as you clear it: FIRST FLOOR CLEAR, MOVING UP'],
+danger:'One operator at the top of a stairwell can hold an entire team. If you take fire on stairs, do not continue upward. Create distance and find an alternate route.',warn:null,info:null},
+
+{id:'E6',tag:'NAVIGATION',tc:'blue',title:'T-Intersection Crossing',
+body:'Never walk blind into a T-intersection. Treat every hallway crossing as you would a door.',
+bul:['Stop short of the intersection and stack against the wall','Pie the left angle fully, then pie the right angle','If you must cross: sprint — do not walk and do not pause mid-crossing','Designate one operator to cover the left angle while others pie right','Call it before anyone moves: CROSSING — COVERING LEFT'],
+info:'Intersections are natural ambush points. Treat every one with the same respect as a breach point. Slow before it. Fast through the crossing. Never stand in the open center.',warn:null,danger:null}
+];
+
+const DRONE=[
+{id:'D1',cat:'PRE-MISSION',title:'Pre-Mission Reconnaissance',
+body:'Before any entry, an aerial asset can map every exterior door, window, roof access, and vehicle position. A sixty-second pass at altitude gives the stack more intelligence than thirty minutes of ground observation.',
+bul:['Map all entry and egress points before the stack forms up','Identify elevated positions that could compromise the approach','Confirm occupancy indicators — heat signatures, movement, vehicle activity','Note any barricades, obstructions, or modified entry points','Establish a persistent hover position for real-time overwatch during entry'],
+tip:'A drone pass does not commit you to an entry. Use it to decide whether to enter at all, where to enter, and how many threats you are dealing with before anyone steps to the wall.'},
+
+{id:'D2',cat:'OVERWATCH',title:'Drone Overwatch During Entry',
+body:'Once the stack begins movement, the aerial asset shifts to a fixed overwatch position above and behind the entry point. The drone operator communicates any external movement to the ground element continuously.',
+bul:['Drone operator maintains eyes on all exterior exits during entry','Any figure exiting the structure gets called immediately: EGRESS NORTH DOOR','Drone tracks external threats the entry team cannot see','Maintain consistent altitude to avoid line-of-sight gaps','If drone loses visual, the ground element must be informed immediately'],
+tip:'The drone operator is a dedicated radio position. They do not manage the aircraft and call contacts simultaneously without dedicated rehearsal. Train that coordination before you need it.'},
+
+{id:'D3',cat:'COMMUNICATIONS',title:'Drone-to-Ground Comms Protocol',
+body:'Drone callouts use clock positions and cardinal directions. Clock positions are relative to the building, not the aircraft heading. Twelve o\'clock is always north, or the designated front of the structure.',
+bul:['Reference format: THREAT — LOCATION — DIRECTION OF MOVEMENT','Example: ONE MALE — NORTH DOOR — MOVING EAST, THIRTY METERS','Use building face references when clock positions are ambiguous','Drone operator acknowledges ground callouts to confirm communication link','Establish a lost-comms protocol before mission start — do not invent it under pressure'],
+tip:'Practice the callout format until it is automatic. Under stress, operators revert to informal language — which creates confusion. Brief the format and hold each other to it.'},
+
+{id:'D4',cat:'POSITIONING',title:'Drone Positioning and Blind Spots',
+body:'Every building creates aerodynamic and visual blind spots depending on structure height and aircraft altitude. Know your asset limitations before you depend on it for lifesaving information.',
+bul:['Tall structures require altitude adjustments to see ground-level exits clearly','Adjacent structures can create masking — the drone cannot see through walls or solid roofs','Low-altitude hover reveals more detail but increases noise signature and detection risk','Wind affects hover stability — factor in gusts when selecting overwatch position','Urban canyons between buildings can force the aircraft into limited positions'],
+tip:'Do not assume the drone can see everything. Brief the ground element on specific dead zones for your structure before the mission. A gap in coverage is not a gap in threat.'},
+
+{id:'D5',cat:'THREAT INDICATORS',title:'Reading Aerial Threat Indicators',
+body:'Human behavior visible from altitude gives the drone operator early warning about threat posture. Learning to read these indicators reduces surprise on entry.',
+bul:['Barricaded or reinforced doors are visible from overhead in most cases','Figures moving away from windows when the aircraft approaches indicate awareness','Parked vehicles with engines running suggest rapid departure is planned','Multiple individuals converging on a single exit suggests coordinated movement','Rooftop activity during a ground approach is an immediate red flag'],
+tip:'Behavior tells you more than position. A person moving quickly away from a window when your aircraft comes into audible range is more concerning than a person standing still near a door.'},
+
+{id:'D6',cat:'LIMITATIONS',title:'Drone Limitations and Contingencies',
+body:'Drones are a force multiplier, not a guarantee. Every mission must be executable without the aerial asset. Plan the drone in. Plan the drone out.',
+bul:['Battery life caps operational time — know your remaining flight duration at all times','Electronic interference or jamming can sever control link unexpectedly','Weather — high wind, precipitation, extreme cold — degrades performance or grounds the asset','Loss of drone does not abort the mission unless commanded — the stack executes on ground intelligence','Brief a no-drone contingency for every operation that uses one'],
+tip:'The most dangerous moment is when a team has been relying on drone overwatch and suddenly loses the feed mid-entry. Calibrate your reliance correctly before it matters.'}
+];
+
+const TOPICS=['the fatal funnel and door stack positioning','pieing a doorway from the outside before entry','button-hook versus cross-entry breach technique','the C-CLAP systematic room clearing method','four-man stack roles and assignments','sectors of fire and preventing fratricide','the non-verbal go signal for a team stack','team callout format during a room clear','stairwell clearing mechanics and danger zones','T-intersection crossing procedure','contact before entry immediate action drill','civilian contact procedures during a room clear','barricaded door response options','multiple exits in a single room — coverage priorities','drone overwatch positioning and blind spots','drone-to-ground communication format and callout structure','the distinction between cover and concealment','when a cleared room is considered secure','the rear guard role and threshold discipline'];
+
+// Fictional placeholder ads — replace with your ad network
+const ADS=[
+{ic:'TG',hl:'Tactical Gear Co.',sub:'Lightweight plate carriers and modular training rigs built for real training environments.',cta:'Learn More'},
+{ic:'WF',hl:'Warrior Fitness',sub:'Performance supplements built for operational athletes. Third-party tested, no fillers.',cta:'View'},
+{ic:'FM',hl:'Field Med Training',sub:'Online combat first aid certification. Recognized by reserve units nationwide.',cta:'Enroll'},
+{ic:'OS',hl:'Operator Study',sub:'Military doctrine flashcards and timed drills. Used by thousands of service members.',cta:'Try Free'},
+{ic:'DF',hl:'Dry-Fire Pro',sub:'Home trigger discipline system. Laser-based, no ammunition required.',cta:'Shop'},
+{ic:'AO',hl:'Aerial Ops Academy',sub:'Tactical drone operations courses for military and law enforcement.',cta:'Start'}
+];
+
+// ── SVG DIAGRAMS ──────────────────────────────────────────
+const DIAGS={
+wall_stack:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="18" y="52" width="58" height="46" fill="none" stroke="#c07818" stroke-width="1.5" stroke-dasharray="4,3" rx="3"/>
+<text x="47" y="78" text-anchor="middle" font-size="7" fill="#c07818" font-family="Inconsolata,monospace" font-weight="600">FATAL FUNNEL</text>
+<rect x="18" y="58" width="2" height="34" fill="#4a5c1e"/>
+<circle cx="14" cy="46" r="10" fill="#4a5c1e" opacity=".9"/>
+<text x="14" y="50" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">1</text>
+<text x="95" y="70" font-size="9" fill="#38352e" font-family="Inconsolata,monospace">Offline</text>
+<text x="95" y="84" font-size="9" fill="#38352e" font-family="Inconsolata,monospace">from door</text>
+<line x1="24" y1="46" x2="90" y2="70" stroke="#c8d8a0" stroke-width="1" stroke-dasharray="3,2"/>
+</svg>`,
+
+pie:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="18" y="50" width="2" height="50" fill="#4a5c1e"/>
+<line x1="20" y1="50" x2="240" y2="12" stroke="#c07818" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/>
+<line x1="20" y1="50" x2="240" y2="50" stroke="#4a5c1e" stroke-width="1.5" stroke-dasharray="4,3"/>
+<line x1="20" y1="100" x2="240" y2="138" stroke="#c07818" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/>
+<circle cx="52" cy="75" r="10" fill="#c07818" opacity=".9"/>
+<text x="52" y="79" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">1</text>
+<text x="160" y="72" font-size="9" fill="#38352e" text-anchor="middle" font-family="Inconsolata,monospace">Slice expands</text>
+<text x="160" y="86" font-size="9" fill="#38352e" text-anchor="middle" font-family="Inconsolata,monospace">as you step out</text>
+</svg>`,
+
+breach:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="ra" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b83228"/></marker>
+<marker id="ga" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a5c1e"/></marker>
+</defs>
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="18" y="52" width="2" height="46" fill="#4a5c1e"/>
+<rect x="128" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="42" y="52" width="86" height="46" fill="rgba(184,50,40,.07)" stroke="#b83228" stroke-width="1" stroke-dasharray="3,3" rx="3"/>
+<text x="85" y="79" text-anchor="middle" font-size="7" fill="#b83228" font-family="Inconsolata,monospace" font-weight="600">KILL ZONE</text>
+<path d="M20,75 Q70,75 105,28" stroke="#b83228" stroke-width="2" fill="none" marker-end="url(#ra)"/>
+<path d="M20,75 Q70,75 105,122" stroke="#4a5c1e" stroke-width="2" fill="none" stroke-dasharray="5,3" marker-end="url(#ga)"/>
+<text x="150" y="35" font-size="8" fill="#b83228" font-family="Inconsolata,monospace">Button-hook</text>
+<text x="150" y="118" font-size="8" fill="#4a5c1e" font-family="Inconsolata,monospace">Cross-entry</text>
+</svg>`,
+
+corner:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="10" width="240" height="8" fill="#4a5c1e" rx="2"/>
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<circle cx="25" cy="25" r="10" fill="#4a5c1e"/>
+<text x="25" y="29" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">1</text>
+<path d="M35,25 L220,95" stroke="#4a5c1e" stroke-width="1.5" stroke-dasharray="5,3" opacity=".4"/>
+<path d="M25,35 L90,145" stroke="#4a5c1e" stroke-width="1.5" stroke-dasharray="5,3" opacity=".4"/>
+<text x="160" y="102" font-size="9" fill="#38352e" text-anchor="middle" font-family="Inconsolata,monospace">Field of view</text>
+<text x="160" y="116" font-size="9" fill="#38352e" text-anchor="middle" font-family="Inconsolata,monospace">covers the room</text>
+</svg>`,
+
+cclap:`<svg class="diag" viewBox="0 0 260 110" xmlns="http://www.w3.org/2000/svg">
+<rect x="5" y="10" width="44" height="30" rx="5" fill="#4a5c1e" opacity=".95"/>
+<text x="27" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inconsolata,monospace">C</text>
+<text x="27" y="56" text-anchor="middle" fill="#38352e" font-size="7" font-family="Inconsolata,monospace">Corners</text>
+<rect x="57" y="10" width="44" height="30" rx="5" fill="#4a5c1e" opacity=".78"/>
+<text x="79" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inconsolata,monospace">C</text>
+<text x="79" y="56" text-anchor="middle" fill="#38352e" font-size="7" font-family="Inconsolata,monospace">Closets</text>
+<rect x="109" y="10" width="44" height="30" rx="5" fill="#4a5c1e" opacity=".62"/>
+<text x="131" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inconsolata,monospace">L</text>
+<text x="131" y="56" text-anchor="middle" fill="#38352e" font-size="7" font-family="Inconsolata,monospace">Large furn.</text>
+<rect x="161" y="10" width="44" height="30" rx="5" fill="#4a5c1e" opacity=".48"/>
+<text x="183" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inconsolata,monospace">A</text>
+<text x="183" y="56" text-anchor="middle" fill="#38352e" font-size="7" font-family="Inconsolata,monospace">Above eye</text>
+<rect x="213" y="10" width="43" height="30" rx="5" fill="#4a5c1e" opacity=".34"/>
+<text x="234" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="700" font-family="Inconsolata,monospace">P</text>
+<text x="234" y="56" text-anchor="middle" fill="#38352e" font-size="7" font-family="Inconsolata,monospace">Periodic</text>
+<text x="130" y="86" text-anchor="middle" font-size="8" fill="#6b6455" font-family="Inconsolata,monospace">Run every room — no exceptions</text>
+</svg>`,
+
+stack_order:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<rect x="100" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<circle cx="86" cy="28" r="12" fill="#1a5490" opacity=".95"/>
+<text x="86" y="32" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">1</text>
+<circle cx="86" cy="60" r="12" fill="#1a5490" opacity=".75"/>
+<text x="86" y="64" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">2</text>
+<circle cx="86" cy="92" r="12" fill="#1a5490" opacity=".58"/>
+<text x="86" y="96" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">3</text>
+<circle cx="86" cy="124" r="12" fill="#1a5490" opacity=".42"/>
+<text x="86" y="128" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">4</text>
+<text x="114" y="32" font-size="8" fill="#38352e" font-family="Inconsolata,monospace">POINTMAN — First in</text>
+<text x="114" y="64" font-size="8" fill="#38352e" font-family="Inconsolata,monospace">ASSAULT — Second in</text>
+<text x="114" y="96" font-size="8" fill="#38352e" font-family="Inconsolata,monospace">SUPPORT — Third in</text>
+<text x="114" y="128" font-size="8" fill="#38352e" font-family="Inconsolata,monospace">REAR GUARD — Holds</text>
+</svg>`,
+
+stack_form:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="18" y="52" width="2" height="46" fill="#4a5c1e"/>
+<circle cx="27" cy="38" r="11" fill="#1a5490" opacity=".95"/>
+<text x="27" y="42" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">1</text>
+<circle cx="27" cy="68" r="11" fill="#1a5490" opacity=".75"/>
+<text x="27" y="72" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">2</text>
+<circle cx="27" cy="98" r="11" fill="#1a5490" opacity=".58"/>
+<text x="27" y="102" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">3</text>
+<circle cx="27" cy="128" r="11" fill="#1a5490" opacity=".42"/>
+<text x="27" y="132" text-anchor="middle" font-size="10" fill="white" font-weight="700" font-family="Inconsolata,monospace">4</text>
+<line x1="27" y1="49" x2="27" y2="57" stroke="#c8d8a0" stroke-width="2"/>
+<line x1="27" y1="79" x2="27" y2="87" stroke="#c8d8a0" stroke-width="2"/>
+<line x1="27" y1="109" x2="27" y2="117" stroke="#c8d8a0" stroke-width="2"/>
+<text x="52" y="140" font-size="7" fill="#6b6455" font-family="Inconsolata,monospace">No.4 faces rear — watches the back</text>
+</svg>`,
+
+team_breach:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="ba" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a5490"/></marker>
+<marker id="ga2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a5c1e"/></marker>
+</defs>
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="18" y="52" width="2" height="46" fill="#4a5c1e"/>
+<rect x="128" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<path d="M20,75 Q68,75 106,28" stroke="#1a5490" stroke-width="2" fill="none" marker-end="url(#ba)"/>
+<path d="M20,75 Q68,75 106,122" stroke="#1a5490" stroke-width="2" fill="none" stroke-dasharray="5,3" marker-end="url(#ba)"/>
+<path d="M20,75 L106,75" stroke="#4a5c1e" stroke-width="1.5" fill="none" stroke-dasharray="3,3" marker-end="url(#ga2)"/>
+<text x="150" y="34" font-size="8" fill="#1a5490" font-family="Inconsolata,monospace">No.1 hinge-side</text>
+<text x="150" y="78" font-size="8" fill="#4a5c1e" font-family="Inconsolata,monospace">No.3 center</text>
+<text x="150" y="118" font-size="8" fill="#1a5490" font-family="Inconsolata,monospace">No.2 latch-side</text>
+<circle cx="20" cy="75" r="5" fill="#6b6455"/>
+<text x="24" y="140" font-size="7" fill="#6b6455" font-family="Inconsolata,monospace">No.4 holds threshold</text>
+</svg>`,
+
+sectors:`<svg class="diag" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="10" width="240" height="8" fill="#4a5c1e" rx="2"/>
+<rect x="10" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<rect x="242" y="10" width="8" height="130" fill="#4a5c1e" rx="2"/>
+<line x1="130" y1="18" x2="130" y2="145" stroke="#e2ddd4" stroke-width="1.5" stroke-dasharray="5,3"/>
+<path d="M28,140 L28,28 L122,28" stroke="#b83228" stroke-width="1.5" fill="rgba(184,50,40,.07)" stroke-dasharray="5,3"/>
+<path d="M138,28 L232,28 L232,140" stroke="#1a5490" stroke-width="1.5" fill="rgba(26,84,144,.07)" stroke-dasharray="5,3"/>
+<circle cx="28" cy="140" r="10" fill="#b83228"/>
+<text x="28" y="144" text-anchor="middle" font-size="9" fill="white" font-weight="700" font-family="Inconsolata,monospace">1</text>
+<circle cx="232" cy="140" r="10" fill="#1a5490"/>
+<text x="232" y="144" text-anchor="middle" font-size="9" fill="white" font-weight="700" font-family="Inconsolata,monospace">2</text>
+<text x="76" y="88" text-anchor="middle" font-size="8" fill="#b83228" font-family="Inconsolata,monospace">No.1 Sector</text>
+<text x="186" y="88" text-anchor="middle" font-size="8" fill="#1a5490" font-family="Inconsolata,monospace">No.2 Sector</text>
+</svg>`
+};
+
+// ── STATE ─────────────────────────────────────────────────
+let xp=+localStorage.getItem('ts_xp')||0;
+let opened=JSON.parse(localStorage.getItem('ts_opened')||'{}');
+let qSc=+localStorage.getItem('ts_qsc')||0;
+let qStr=+localStorage.getItem('ts_qst')||0;
+let qTot=+localStorage.getItem('ts_qt')||0;
+let banIdx=0,qBusy=false,_qExpl='',_qCorr=0;
+
+// ── XP ────────────────────────────────────────────────────
+function gainXP(n){xp=Math.min(xp+n,99999);localStorage.setItem('ts_xp',xp);refreshXP();}
+function refreshXP(){document.getElementById('xpFill').style.width=(xp%100)+'%';document.getElementById('xpNum').textContent=xp;}
+
+// ── TABS ──────────────────────────────────────────────────
+function go(t){
+  document.querySelectorAll('.nav-tab').forEach(e=>e.classList.toggle('active',e.dataset.t===t));
+  document.querySelectorAll('.section').forEach(e=>e.classList.toggle('active',e.id==='s-'+t));
+  document.getElementById('scroll').scrollTop=0;
+}
+
+// ── HTML BUILDERS ─────────────────────────────────────────
+function dWrap(type){
+  if(!type||!DIAGS[type])return'';
+  return`<div class="diag-wrap"><div class="diag-hdr"><div class="diag-dot"></div><span class="diag-lbl">Tactical Diagram</span></div><div class="diag-body">${DIAGS[type]}</div></div>`;
+}
+function cBox(cls,lbl,txt){if(!txt)return'';return`<div class="callout ${cls}"><div><span class="callout-lbl">${lbl}</span>${txt}</div></div>`;}
+function aiBtn(id,title){
+  return`<div class="ai-box" id="ai-${id}"></div>
+<div class="btn-row">
+  <button class="btn btn-p" onclick="markDone('${id}');event.stopPropagation()">Mark Complete</button>
+  <button class="btn btn-ai" onclick="doAI('${id}','${title.replace(/'/g,"&#39;")}');event.stopPropagation()">Ask AI</button>
+</div>`;}
+function iAd(i){const a=ADS[i%ADS.length];return`<div class="iad"><div class="iad-badge">AD</div><div class="iad-icon">${a.ic}</div><div class="iad-body"><div class="iad-hl">${a.hl}</div><div class="iad-sub">${a.sub}</div></div><div class="iad-cta">${a.cta}</div></div>`;}
+
+// ── RENDER STEP CARDS ─────────────────────────────────────
+function renderSteps(arr,wrapId,fillId,pctId){
+  const el=document.getElementById(wrapId);
+  let h='',lastPh=null;
+  arr.forEach(s=>{
+    if(s.phase&&s.phase!==lastPh){h+=`<div class="phase-div"><span class="phase-div-txt">${s.phase}</span></div>`;lastPh=s.phase;}
+    const dn=opened[s.id];
+    let body=`<p>${s.body}</p>`;
+    if(s.roles){body+='<div class="role-grid">';s.roles.forEach(r=>{body+=`<div class="role-card"><div class="role-name">${r.name}</div><div class="role-desc">${r.desc}</div></div>`;});body+='</div>';}
+    if(s.bul)body+='<ul>'+s.bul.map(b=>`<li>${b}</li>`).join('')+'</ul>';
+    body+=cBox('danger','Danger',s.danger)+cBox('warning','Warning',s.warn)+dWrap(s.diag);
+    if(s.tip)body+=cBox('tip','Training Note',s.tip);
+    body+=aiBtn(s.id,s.title);
+    h+=`<div class="sc${dn?' done':''}" id="c-${s.id}" onclick="toggleSC('${s.id}','${arr===SOLO?'soloFill':'teamFill'}','${arr===SOLO?'soloPct':'teamPct'}')">
+<div class="sc-hdr"><div class="sc-num ${dn?'sn-done':'sn-'+s.sev}">${dn?'&#10003;':s.id}</div><div class="sc-info"><div class="sc-title">${s.title}</div><div class="sc-sub">${s.sub}</div></div><div class="sc-chev">&#8964;</div></div>
+<div class="sc-body">${body}</div></div>`;
+  });
+  el.innerHTML=h;
+  updProg(arr,fillId,pctId);
+}
+
+function toggleSC(id,fid,pid){
+  const c=document.getElementById('c-'+id);
+  const wasOpen=c.classList.contains('open');
+  document.querySelectorAll('.sc.open').forEach(x=>x.classList.remove('open'));
+  if(!wasOpen){c.classList.add('open');markOpen(id);updProg(id[0]==='S'?SOLO:TEAM,fid,pid);}
+}
+
+function markDone(id){
+  opened[id]=true;localStorage.setItem('ts_opened',JSON.stringify(opened));gainXP(20);updHomeStats();
+  const c=document.getElementById('c-'+id);if(!c)return;
+  c.classList.add('done');c.classList.remove('open');
+  const n=c.querySelector('.sc-num');if(n){n.className='sc-num sn-done';n.innerHTML='&#10003;';}
+  updProg(SOLO,'soloFill','soloPct');updProg(TEAM,'teamFill','teamPct');
+}
+
+function markOpen(id){if(!opened[id]){opened[id]=true;localStorage.setItem('ts_opened',JSON.stringify(opened));gainXP(10);updHomeStats();}}
+
+function updProg(arr,fid,pid){
+  const dn=arr.filter(s=>opened[s.id]).length,pct=Math.round((dn/arr.length)*100);
+  const f=document.getElementById(fid),p=document.getElementById(pid);
+  if(f)f.style.width=pct+'%';if(p)p.textContent=pct+'%';
+}
+
+// ── RENDER EDGE ───────────────────────────────────────────
+function renderEdge(){
+  const el=document.getElementById('edge-wrap');let h='';
+  EDGE.forEach((e,i)=>{
+    const dn=opened[e.id];
+    let body=`<p style="margin-bottom:8px">${e.body}</p><ul>${e.bul.map(b=>`<li>${b}</li>`).join('')}</ul>`;
+    body+=cBox('danger','Danger',e.danger)+cBox('warning','Warning',e.warn)+cBox('info','Info',e.info)+aiBtn(e.id,e.title);
+    h+=`<div class="ec${dn?' done':''}" id="c-${e.id}" data-c="${e.tc}" onclick="toggleEC('${e.id}')">
+<div class="ec-hdr"><span class="etag ${dn?'done':e.tc}">${dn?'DONE':e.tag}</span><span class="ec-title">${e.title}</span><span class="ec-chev">&#8964;</span></div>
+<div class="ec-body">${body}</div></div>`;
+    if(i===1||i===3)h+=iAd(i);
+  });
+  el.innerHTML=h;
+}
+
+function toggleEC(id){
+  const c=document.getElementById('c-'+id);
+  const wo=c.classList.contains('open');
+  document.querySelectorAll('.ec.open').forEach(x=>x.classList.remove('open'));
+  if(!wo){c.classList.add('open');if(!opened[id]){opened[id]=true;localStorage.setItem('ts_opened',JSON.stringify(opened));gainXP(10);updHomeStats();const tg=c.querySelector('.etag');if(tg){tg.className='etag done';tg.textContent='DONE';}}}
+}
+
+// ── RENDER DRONE ──────────────────────────────────────────
+function renderDrone(){
+  const el=document.getElementById('drone-wrap');let h='';
+  DRONE.forEach((d,i)=>{
+    const dn=opened[d.id];
+    let body=`<p style="margin-bottom:8px">${d.body}</p><ul>${d.bul.map(b=>`<li>${b}</li>`).join('')}</ul>`;
+    if(d.tip)body+=`<div class="dtip"><span class="dtip-lbl">Operator Note</span>${d.tip}</div>`;
+    body+=aiBtn(d.id,d.title);
+    h+=`<div class="dc${dn?' done':''}" id="c-${d.id}" onclick="toggleDC('${d.id}')">
+<div class="dc-hdr"><span class="dcat">${d.cat}</span><span class="dc-title">${d.title}</span><span class="dc-chev">&#8964;</span></div>
+<div class="dc-body">${body}</div></div>`;
+    if(i===2)h+=iAd(4);
+  });
+  el.innerHTML=h;
+}
+
+function toggleDC(id){
+  const c=document.getElementById('c-'+id);
+  const wo=c.classList.contains('open');
+  document.querySelectorAll('.dc.open').forEach(x=>x.classList.remove('open'));
+  if(!wo){c.classList.add('open');markOpen(id);}
+}
+
+// ── ADS ───────────────────────────────────────────────────
+function renderBanner(){const a=ADS[banIdx%ADS.length];document.getElementById('banTxt').innerHTML=`<strong>${a.hl}</strong> — ${a.sub}`;document.getElementById('banCta').textContent=a.cta;}
+function rotateBanner(){banIdx=(banIdx+1)%ADS.length;renderBanner();}
+
+// ── STATS ─────────────────────────────────────────────────
+function updHomeStats(){
+  document.getElementById('stCards').textContent=Object.keys(opened).length;
+  if(qTot>0)document.getElementById('stQuiz').textContent=Math.round((qSc/qTot)*100)+'%';
+}
+
+// ── AI HINT ───────────────────────────────────────────────
+async function doAI(id,title){
+  const box=document.getElementById('ai-'+id);if(!box)return;
+  box.className='ai-box on';
+  box.innerHTML=`<div class="ai-hdr"><div class="ai-dot"></div><span class="ai-lbl">AI Instructor</span></div><div class="ld"><div class="spin"></div> Loading instructor note...</div>`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'You are a seasoned MOUT instructor for the Army National Guard. Give one focused training tip for the technique given. Write 2-3 sentences. Speak as a senior NCO to a junior soldier. Plain, direct language. No markdown, no bullet points.',messages:[{role:'user',content:`Training tip for: "${title}"`}]})});
+    const d=await r.json();
+    box.innerHTML=`<div class="ai-hdr"><div class="ai-dot"></div><span class="ai-lbl">AI Instructor</span></div><div class="ai-txt">${d.content?.[0]?.text||'Unable to load.'}</div>`;
+  }catch(e){box.innerHTML=`<div class="ai-hdr"><div class="ai-dot"></div><span class="ai-lbl">AI Instructor</span></div><div class="ai-txt">Unable to connect. Check your network.</div>`;}
+}
+
+// ── QUIZ ──────────────────────────────────────────────────
+function updQuizUI(){document.getElementById('qSc').textContent=qSc;document.getElementById('qStr').textContent=qStr;updHomeStats();}
+
+async function loadQ(){
+  if(qBusy)return;qBusy=true;
+  const topic=TOPICS[Math.floor(Math.random()*TOPICS.length)];
+  const wrap=document.getElementById('quiz-wrap');
+  wrap.innerHTML=`<div class="qcard"><div class="qtype">Loading question...</div><div class="ld" style="margin-top:8px"><div class="spin"></div> AI generating: ${topic}</div></div>`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`You are a MOUT quiz generator for the Army National Guard. Return ONLY valid JSON, no markdown, no backticks, no preamble:
+{"question":"?","options":["A","B","C","D"],"correct":0,"explanation":"Why correct per doctrine."}
+"correct" is 0-based index. Base on FM 3-06 and SH 21-76 doctrine. Practical, scenario-based questions only.`,messages:[{role:'user',content:`MOUT quiz question about: ${topic}`}]})});
+    const d=await r.json();
+    const q=JSON.parse(d.content?.[0]?.text.replace(/```json|```/g,'').trim());
+    _qExpl=q.explanation;_qCorr=q.correct;
+    const opts=q.options.map((o,i)=>`<button class="qopt" onclick="ansQ(${i},this)">${o}</button>`).join('');
+    wrap.innerHTML=`<div class="qcard"><div class="qtype">Multiple Choice — MOUT Doctrine</div><div class="qquestion">${q.question}</div><div class="qopts">${opts}</div><div class="qfb" id="qfb"></div><div class="btn-row" id="qnxt" style="display:none"><button class="btn btn-p" onclick="loadQ()">Next Question</button><button class="btn btn-g" onclick="resetQ()">Reset</button></div></div>${iAd(5)}`;
+  }catch(e){wrap.innerHTML=`<div class="qcard"><div class="qtype">Error</div><div class="qquestion">Could not load question. Check your connection.</div><div class="btn-row"><button class="btn btn-p" onclick="loadQ()">Try Again</button></div></div>`;}
+  qBusy=false;
+}
+
+function ansQ(sel,btn){
+  document.querySelectorAll('.qopt').forEach(o=>{o.disabled=true;});
+  const ok=sel===_qCorr;
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok)document.querySelectorAll('.qopt')[_qCorr].classList.add('correct');
+  qTot++;if(ok){qSc++;qStr++;gainXP(25);}else qStr=0;
+  localStorage.setItem('ts_qsc',qSc);localStorage.setItem('ts_qst',qStr);localStorage.setItem('ts_qt',qTot);
+  updQuizUI();
+  const fb=document.getElementById('qfb');
+  fb.className='qfb on '+(ok?'correct':'wrong');
+  fb.innerHTML=`<strong>${ok?'Correct.':'Incorrect.'}</strong> ${_qExpl}`;
+  document.getElementById('qnxt').style.display='flex';
+}
+
+function resetQ(){qSc=0;qStr=0;qTot=0;localStorage.setItem('ts_qsc',0);localStorage.setItem('ts_qst',0);localStorage.setItem('ts_qt',0);updQuizUI();document.getElementById('quiz-wrap').innerHTML=`<div class="qcard"><div class="qtype">Score reset.</div><div class="qquestion">Start fresh?</div><div class="btn-row"><button class="btn btn-p" onclick="loadQ()">Start Quiz</button></div></div>`;}
+
+// ── INIT ──────────────────────────────────────────────────
+function init(){
+  refreshXP();renderBanner();
+  renderSteps(SOLO,'solo-wrap','soloFill','soloPct');
+  renderSteps(TEAM,'team-wrap','teamFill','teamPct');
+  renderEdge();renderDrone();
+  document.getElementById('home-ad').innerHTML=iAd(2);
+  updQuizUI();updHomeStats();
+  setInterval(rotateBanner,30000);
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+init();
+</script>
+</body>
+</html>
